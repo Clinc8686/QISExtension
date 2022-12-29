@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "QIS Helper",
+  "description": "Erweitern das QIS der Hochschule Trier um ein paar Funktionen",
+  "version": "1.0",
+  "action": {
+    "default_icon": "default_icon.png"
+  },
+  "content_scripts": [
+    {
+      "js": ["scripts/content.js"],
+      "matches": [
+        "https://qis.hochschule-trier.de/qisserver/*"
+      ]
+    }
+  ]
+}
