@@ -66,7 +66,6 @@ function changeHeader() {
 }
 
 function changeSemester() {
-    restoreOldTable();
 
     const semester = document.getElementById('semester');
     const selectedSemester = semester.options[semester.selectedIndex].text;
@@ -111,8 +110,3 @@ function changeSemester() {
     }
 }
  */
-
-function restoreOldTable() {
-    const actualtbody = document.getElementsByTagName('tbody')[1];
-    actualtbody.parentNode.replaceChild(oldtbody, actualtbody);
-}
