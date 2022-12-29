@@ -1,4 +1,5 @@
 const abstand_pruefinfo = document.getElementsByClassName('abstand_pruefinfo')[0];
+const h1 = document.getElementsByTagName('h1')[0];
 const alignLefts = document.getElementsByClassName('ns_tabelle1_alignleft');
 const qis_konto = document.getElementsByClassName('qis_konto');
 let semester = new Set();
@@ -8,7 +9,7 @@ let sumGrades = 0;
 let worstGrade = 0;
 let bestGrade = 0;
 
-if (abstand_pruefinfo) {
+if (abstand_pruefinfo && h1.textContent.trim() === 'Notenspiegel') {
     getAllSemesters();
     changeHeader();
     printAverageGrade();
