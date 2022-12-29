@@ -2,6 +2,11 @@ const abstand_pruefinfo = document.getElementsByClassName('abstand_pruefinfo')[0
 const alignLefts = document.getElementsByClassName('ns_tabelle1_alignleft');
 const qis_konto = document.getElementsByClassName('qis_konto');
 let semester = new Set();
+let avgGrade = 0;
+let sumECTS = 0;
+let sumGrades = 0;
+let worstGrade = 0;
+let bestGrade = 0;
 
 if (abstand_pruefinfo) {
     getAllSemesters();
@@ -119,42 +124,40 @@ function changeSemester() {
  */
 
 function calculateAverageGrade() {
-    let sumECTS = 0;
-    let sumGrades = 0;
-
     for (let i = 0; i < qis_konto.length; i++) {
         if (qis_konto[i].textContent.trim() === 'BE') {
             const grade = qis_konto[i-1].textContent.replace(/,/g, '.');
             const ects = parseFloat(qis_konto[i+1].textContent.replace(/,/g, '.'));
-            console.log(sumECTS + ' ' + ects);
             sumECTS += parseFloat(ects);
             sumGrades += (grade * ects);
         }
     }
-    console.log(sumECTS + ' ' + sumGrades);
-    return (sumGrades/sumECTS);
+    avgGrade = sumGrades/sumECTS;
+    const requiredECTS = 180.0;
+    const missingECTS = requiredECTS - sumECTS;
+    worstGrade = ((missingECTS * 4.0) + sumGrades) / requiredECTS;
+    worstGrade = roundToTwo(worstGrade);
+    bestGrade = ((missingECTS * 1.0) + sumGrades) / requiredECTS;
+    bestGrade = roundToTwo(bestGrade);
 }
 
 function printAverageGrade() {
-    const avgGrade = calculateAverageGrade();
-    const tableValues = ['999999999', 'Notendurchschnitt', 'Alle', '', '', roundToTwo(avgGrade), '', '', '', ''];
-    const tr = document.createElement('tr');
+    calculateAverageGrade();
+    const tableValues = ['Aktueller Notendurchschnitt: ' + roundToTwo(avgGrade), 'Bester erreichbarer Notendurchschnitt: ' + bestGrade, 'Schlechtester erreichbarer Notendurchschnitt: ' + worstGrade];
+    let latestRow = alignLefts[alignLefts.length-1].parentNode;
 
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 3; i++) {
+        const tr = document.createElement('tr');
         const td = document.createElement('td');
         td.className = 'qis_konto';
         td.setAttribute('valign', 'top');
         td.textContent = tableValues[i];
-
-        if (i <= 1) {
-            td.setAttribute('align', 'left');
-        } else {
-            td.setAttribute('align', 'center');
-        }
+        td.setAttribute('colspan', '10');
+        td.setAttribute('align', 'left');
         tr.appendChild(td);
+        insertAfter(latestRow, tr);
+        latestRow = tr;
     }
-
-    insertAfter(alignLefts[alignLefts.length-1].parentNode, tr);
 }
 
 function insertAfter(referenceNode, newNode) {
