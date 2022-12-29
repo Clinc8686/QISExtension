@@ -94,7 +94,7 @@ function changeSemester() {
             }
         }
 
-        for (let i = qis_konto.length-1; i >= 0; i--) {
+        for (let i = qis_konto.length-4; i >= 0; i--) {
             qis_konto[i].parentElement.style.display = displayValue;
             i = i - 8;
         }
