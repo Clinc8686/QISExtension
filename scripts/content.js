@@ -1,5 +1,5 @@
 const abstand_pruefinfo = document.getElementsByClassName('abstand_pruefinfo')[0];
-const semester = new Set();
+let semester = new Set();
 let oldtbody;
 
 if (abstand_pruefinfo) {
@@ -17,11 +17,19 @@ function getAllSemesters() {
     if (alignLefts.length > 0) {
         for (const alignLeft of alignLefts) {
             if (alignLeft.textContent.includes('SoSe')) {
-                semester.add(alignLeft.textContent);
+                semester.add(alignLeft.textContent.trim());
             } else if (alignLeft.textContent.includes('WiSe')) {
-                semester.add(alignLeft.textContent);
+                semester.add(alignLeft.textContent.trim());
             }
         }
+
+        semester = Array.from(semester).sort((a,b) => {
+            a1 = a.substr(5,2);
+            b1 = b.substr(5,2);
+            if (a1 === b1)
+                return 0;
+            return a1 > b1 ? 1 : -1;
+        });
     }
 }
 
@@ -66,7 +74,6 @@ function changeHeader() {
 }
 
 function changeSemester() {
-
     const semester = document.getElementById('semester');
     const selectedSemester = semester.options[semester.selectedIndex].text;
     let displayValue = '';
@@ -85,6 +92,12 @@ function changeSemester() {
                 alignLeft.parentElement.style.display = displayValue;
                 i = i - 2;
             }
+        }
+
+        const qis_konto = document.getElementsByClassName('qis_konto');
+        for (let i = qis_konto.length-1; i >= 0; i--) {
+            qis_konto[i].parentElement.style.display = displayValue;
+            i = i - 8;
         }
     }
 }
