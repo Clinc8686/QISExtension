@@ -1,19 +1,15 @@
 const abstand_pruefinfo = document.getElementsByClassName('abstand_pruefinfo')[0];
+const alignLefts = document.getElementsByClassName('ns_tabelle1_alignleft');
+const qis_konto = document.getElementsByClassName('qis_konto');
 let semester = new Set();
-let oldtbody;
 
 if (abstand_pruefinfo) {
-    saveData();
     getAllSemesters();
     changeHeader();
-}
-
-function saveData() {
-    oldtbody = document.getElementsByTagName('tbody')[1];
+    printAverageGrade();
 }
 
 function getAllSemesters() {
-    const alignLefts = document.getElementsByClassName('ns_tabelle1_alignleft');
     if (alignLefts.length > 0) {
         for (const alignLeft of alignLefts) {
             if (alignLeft.textContent.includes('SoSe')) {
@@ -81,7 +77,6 @@ function changeSemester() {
         displayValue = 'none';
     }
 
-    const alignLefts = document.getElementsByClassName('ns_tabelle1_alignleft');
     if (alignLefts.length > 0) {
         for (let i = alignLefts.length-1; i >= 0; i--) {
             const alignLeft = alignLefts[i];
@@ -94,7 +89,6 @@ function changeSemester() {
             }
         }
 
-        const qis_konto = document.getElementsByClassName('qis_konto');
         for (let i = qis_konto.length-1; i >= 0; i--) {
             qis_konto[i].parentElement.style.display = displayValue;
             i = i - 8;
@@ -103,7 +97,7 @@ function changeSemester() {
 }
 
 /*
-FUnktionsweise kopiert, falls man nur die Noten bzw blauen hervorgehobenen Einzeiler sehen möchte
+Funktionsweise kopiert, falls man nur die Noten bzw blauen hervorgehobenen Einzeiler sehen möchte
 function changeSemester() {
     const semester = document.getElementById('semester');
     const selectedSemester = semester.options[semester.selectedIndex].text;
@@ -123,3 +117,50 @@ function changeSemester() {
     }
 }
  */
+
+function calculateAverageGrade() {
+    let sumECTS = 0;
+    let sumGrades = 0;
+
+    for (let i = 0; i < qis_konto.length; i++) {
+        if (qis_konto[i].textContent.trim() === 'BE') {
+            const grade = qis_konto[i-1].textContent.replace(/,/g, '.');
+            const ects = parseFloat(qis_konto[i+1].textContent.replace(/,/g, '.'));
+            console.log(sumECTS + ' ' + ects);
+            sumECTS += parseFloat(ects);
+            sumGrades += (grade * ects);
+        }
+    }
+    console.log(sumECTS + ' ' + sumGrades);
+    return (sumGrades/sumECTS);
+}
+
+function printAverageGrade() {
+    const avgGrade = calculateAverageGrade();
+    const tableValues = ['999999999', 'Notendurchschnitt', 'Alle', '', '', roundToTwo(avgGrade), '', '', '', ''];
+    const tr = document.createElement('tr');
+
+    for (let i = 0; i < 9; i++) {
+        const td = document.createElement('td');
+        td.className = 'qis_konto';
+        td.setAttribute('valign', 'top');
+        td.textContent = tableValues[i];
+
+        if (i <= 1) {
+            td.setAttribute('align', 'left');
+        } else {
+            td.setAttribute('align', 'center');
+        }
+        tr.appendChild(td);
+    }
+
+    insertAfter(alignLefts[alignLefts.length-1].parentNode, tr);
+}
+
+function insertAfter(referenceNode, newNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+}
+
+function roundToTwo(num) {
+    return +(Math.round(num + "e+2")  + "e-2");
+}
