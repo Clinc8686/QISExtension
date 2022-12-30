@@ -6,7 +6,7 @@ function changeStatus() {
     if (checkbox.checked) {
         chrome.storage.local.set({ isenabled: true }, () => {
             if (chrome.runtime.lastError)
-                console.log('Error setting');
+                console.log('Error QIS Helper - isenable storage menu:1');
         });
 
         if (checkboxText.innerText.includes('disabled')) {
@@ -16,7 +16,7 @@ function changeStatus() {
     } else {
         chrome.storage.local.set({ isenabled: false }, () => {
             if (chrome.runtime.lastError)
-                console.log('Error setting');
+                console.log('Error QIS Helper - isenable storage menu:2');
         });
 
         if (checkboxText.innerText.includes('enabled')) {
@@ -34,14 +34,16 @@ window.addEventListener('load', (event) => {
 
 function getStorageValue() {
     chrome.storage.local.get(["isenabled"]).then((result) => {
-        console.log("Value currently is " + result.isenabled);  //true
-        window.isenabled = result.isenabled;
+        if (result.isenabled === undefined) {
+            window.isenabled = true;
+        } else {
+            window.isenabled = result.isenabled;
+        }
         setStatus();
     });
 }
 
 function setStatus() {
-    console.log('isenabled: ' + window.isenabled);
     const checkboxText = document.getElementById('checkboxText');
     if (window.isenabled) {
         if (checkboxText.innerText.includes('disabled')) {

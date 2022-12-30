@@ -11,8 +11,15 @@ let bestGrade = 0;
 let isenabled;
 
 chrome.storage.local.get(["isenabled"]).then((result) => {
-    console.log("Value currently is " + result.isenabled);  //true
-    window.isenabled = result.isenabled;
+    if (result.isenabled === undefined) {
+        window.isenabled = true;
+        chrome.storage.local.set({ isenabled: true }, () => {
+            if (chrome.runtime.lastError)
+                console.log('Error QIS Helper - isenable storage content');
+        });
+    } else {
+        window.isenabled = result.isenabled;
+    }
     start();
 });
 
