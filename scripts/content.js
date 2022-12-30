@@ -8,13 +8,24 @@ let sumECTS = 0;
 let sumGrades = 0;
 let worstGrade = 0;
 let bestGrade = 0;
+let isenabled;
 
-if (abstand_pruefinfo && h1.textContent.trim() === 'Notenspiegel') {
-    getAllSemesters();
-    changeHeader();
-    printAverageGrade();
+chrome.storage.local.get(["isenabled"]).then((result) => {
+    console.log("Value currently is " + result.isenabled);  //true
+    window.isenabled = result.isenabled;
+    start();
+});
+
+function start() {
+    // Checks if checkbox from menu is enabled and if it is the right page
+    if (window.isenabled && abstand_pruefinfo && h1.textContent.trim() === 'Notenspiegel') {
+        getAllSemesters();
+        changeHeader();
+        printAverageGrade();
+    }
 }
 
+// Select all semesters once
 function getAllSemesters() {
     if (alignLefts.length > 0) {
         for (const alignLeft of alignLefts) {
@@ -25,9 +36,10 @@ function getAllSemesters() {
             }
         }
 
+        // Sort semesters
         semester = Array.from(semester).sort((a,b) => {
-            a1 = a.substr(5,2);
-            b1 = b.substr(5,2);
+            const a1 = a.substr(5,2);
+            const b1 = b.substr(5,2);
             if (a1 === b1)
                 return 0;
             return a1 > b1 ? 1 : -1;
@@ -35,7 +47,9 @@ function getAllSemesters() {
     }
 }
 
+// Add selector with all semester in header
 function changeHeader() {
+    // Get all attributes from old header
     const tableHeaders = document.getElementsByClassName('tabelleheader');
     for (const tableHeader of tableHeaders) {
         if (tableHeader.textContent.includes('Semester')) {
@@ -46,12 +60,16 @@ function changeHeader() {
                 values.push(att.nodeValue);
             }
 
+            // Create select element
             const selectList = document.createElement('select');
             selectList.addEventListener('change', changeSemester);
             selectList.style.textDecoration = 'none';
             selectList.style.backgroundColor = '#5381BE';
-            selectList.style.height = height+'px';
+            //selectList.style.height = height+'px';
+            selectList.style.minHeight = '44px';
+            selectList.style.width = '100%';
             selectList.id = 'semester';
+            selectList.after.style
 
             // Add Semester as first Element
             const top = document.createElement('option');
@@ -75,6 +93,7 @@ function changeHeader() {
     }
 }
 
+// Hide all semesters with different years and show correct semesters
 function changeSemester() {
     const semester = document.getElementById('semester');
     const selectedSemester = semester.options[semester.selectedIndex].text;
@@ -124,6 +143,7 @@ function changeSemester() {
 }
  */
 
+// Search all grades an ects and calculate average, best, worst
 function calculateAverageGrade() {
     for (let i = 0; i < qis_konto.length; i++) {
         if (qis_konto[i].textContent.trim() === 'BE') {
@@ -142,6 +162,7 @@ function calculateAverageGrade() {
     bestGrade = roundToTwo(bestGrade);
 }
 
+// Prints the average, best and worst grade
 function printAverageGrade() {
     calculateAverageGrade();
     const tableValues = ['Aktueller Notendurchschnitt: ' + roundToTwo(avgGrade), 'Bester erreichbarer Notendurchschnitt: ' + bestGrade, 'Schlechtester erreichbarer Notendurchschnitt: ' + worstGrade];
@@ -161,10 +182,12 @@ function printAverageGrade() {
     }
 }
 
+// Function to insert a Node after a other Node
 function insertAfter(referenceNode, newNode) {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
+// Round to two decimal places
 function roundToTwo(num) {
     return +(Math.round(num + "e+2")  + "e-2");
 }
