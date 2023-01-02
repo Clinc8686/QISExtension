@@ -10,6 +10,7 @@ let worstGrade = 0;
 let bestGrade = 0;
 let isenabled;
 
+// Search for isenabled object in local storage of the browser and starts extension
 chrome.storage.local.get(["isenabled"]).then((result) => {
     if (result.isenabled === undefined) {
         window.isenabled = true;
@@ -54,48 +55,127 @@ function getAllSemesters() {
     }
 }
 
-// Add selector with all semester in header
+// Change semester header to selector field
+function changeSemesterHeader(tableHeader) {
+    const height = tableHeader.clientHeight;
+    let nodes=[], values=[];
+    for (const att of tableHeader.attributes) {
+        nodes.push(att.nodeName);
+        values.push(att.nodeValue);
+    }
+
+    // Create select element
+    const selectList = document.createElement('select');
+    selectList.addEventListener('change', changeSemester);
+    selectList.style.textDecoration = 'none';
+    selectList.style.backgroundColor = '#1c2e44';
+    selectList.style.minHeight = '44px';
+    selectList.style.width = 'min-content';
+    selectList.id = 'semester';
+
+    // Add Semester as first Element
+    const top = document.createElement('option');
+    top.text = 'Semester';
+    top.value = 'all';
+    selectList.appendChild(top);
+
+    // Add semesters
+    // noinspection JSAssignmentUsedAsCondition
+    for (let it = semester.values(), val = null; val = it.next().value;) {
+        const opt = document.createElement('option');
+        opt.text = val;
+        opt.value = val;
+        selectList.appendChild(opt);
+    }
+    for (let i = 0; i < nodes.length; i++) {
+        selectList.setAttribute(nodes[i], values[i]);
+    }
+    tableHeader.parentNode.replaceChild(selectList,tableHeader);
+}
+
+// Show only modules which contains letters of the searchstring
+let noModules = false;
+function changeExam() {
+    const searchString = document.getElementById('searchBar').value;
+
+    let displayValue = '';
+    if (searchString !== '') {
+        displayValue = 'none';
+    }
+
+    // Hide wrong modules and show correct modules
+    let hideCounter = 0;
+    if (alignLefts.length > 0) {
+        for (let i = alignLefts.length-1; i >= 0; i--) {
+            const alignLeft = alignLefts[i];
+            if (alignLeft.textContent.trim().includes(searchString)) {
+                alignLeft.parentElement.style.display = '';
+                i = i - 2;
+            } else {
+                alignLeft.parentElement.style.display = displayValue;
+                hideCounter++;
+            }
+        }
+
+        for (let i = qis_konto.length-4; i >= 0; i--) {
+            qis_konto[i].parentElement.style.display = displayValue;
+            i = i - 8;
+        }
+    }
+
+    // Prints hint if no modules found
+    let latestRow = alignLefts[alignLefts.length-1].parentNode;
+    if (hideCounter === alignLefts.length && noModules === false) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.id = 'noModules';
+        td.setAttribute('valign', 'top');
+        td.textContent = 'Es wurden keine Module gefunden!';
+        td.setAttribute('colspan', '10');
+        td.setAttribute('align', 'left');
+        tr.appendChild(td);
+        insertAfter(latestRow, tr);
+        noModules = true;
+    } else if (hideCounter !== alignLefts.length && noModules === true) {
+        const nm = document.getElementById('noModules');
+        if (nm)
+            nm.remove();
+        noModules = false;
+    }
+}
+
+function changeExamName(tableHeader) {
+    const height = tableHeader.clientHeight;
+    let nodes=[], values=[];
+    for (const att of tableHeader.attributes) {
+        nodes.push(att.nodeName);
+        values.push(att.nodeValue);
+    }
+
+    // Create input field
+    const inputField = document.createElement('input');
+    inputField.addEventListener('input', changeExam);
+    inputField.style.textDecoration = 'none';
+    inputField.style.backgroundColor = '#1c2e44';
+    inputField.style.minHeight = '44px';
+    inputField.style.width = '400px';
+    inputField.id = 'searchBar';
+    inputField.placeholder = 'Search...';
+    inputField.type = 'text';
+    inputField.style.color = '#fff';
+
+    tableHeader.parentNode.replaceChild(inputField, tableHeader);
+}
+
+// Search for headers
 function changeHeader() {
     // Get all attributes from old header
     const tableHeaders = document.getElementsByClassName('tabelleheader');
-    for (const tableHeader of tableHeaders) {
-        if (tableHeader.textContent.includes('Semester')) {
-            const height = tableHeader.clientHeight;
-            let nodes=[], values=[];
-            for (const att of tableHeader.attributes) {
-                nodes.push(att.nodeName);
-                values.push(att.nodeValue);
-            }
-
-            // Create select element
-            const selectList = document.createElement('select');
-            selectList.addEventListener('change', changeSemester);
-            selectList.style.textDecoration = 'none';
-            selectList.style.backgroundColor = '#5381BE';
-            //selectList.style.height = height+'px';
-            selectList.style.minHeight = '44px';
-            selectList.style.width = '100%';
-            selectList.id = 'semester';
-            selectList.after.style
-
-            // Add Semester as first Element
-            const top = document.createElement('option');
-            top.text = 'Semester';
-            top.value = 'all';
-            selectList.appendChild(top);
-
-            // Add semesters
-            // noinspection JSAssignmentUsedAsCondition
-            for (let it = semester.values(), val = null; val = it.next().value;) {
-                const opt = document.createElement('option');
-                opt.text = val;
-                opt.value = val;
-                selectList.appendChild(opt);
-            }
-            for (let i = 0; i < nodes.length; i++) {
-                selectList.setAttribute(nodes[i], values[i]);
-            }
-            tableHeader.parentNode.replaceChild(selectList,tableHeader)
+    for (let i = tableHeaders.length-1; i >= 0; i--) {
+        if (tableHeaders[i].textContent.includes('Semester')) {
+            changeSemesterHeader(tableHeaders[i]);
+        } else if (tableHeaders[i].textContent.includes('Prüfungstext')) {
+            changeExamName(tableHeaders[i]);
         }
     }
 }
