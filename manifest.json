@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "QIS Helper",
-  "description": "Erweitert das QIS der Hochschule Trier um eine Sortierung nach Semestern und Berechnungen zur Gesamtnote.",
+  "name": "HS Trier QIS Helper",
+  "description": "Erweitert den QIS Notenspiegel der Hochschule Trier um einige hilfreiche Funktionen.",
   "version": "1.0",
   "action": {
     "default_popup": "extension_menu/index.html",
