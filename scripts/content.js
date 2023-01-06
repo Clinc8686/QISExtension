@@ -64,14 +64,19 @@ function changeSemesterHeader(tableHeader) {
         values.push(att.nodeValue);
     }
 
+    const tableCell = document.createElement('th');
+    for (let i = 0; i < nodes.length; i++) {
+        tableCell.setAttribute(nodes[i], values[i]);
+    }
+
     // Create select element
     const selectList = document.createElement('select');
     selectList.addEventListener('change', changeSemester);
     selectList.style.textDecoration = 'none';
     selectList.style.backgroundColor = '#1c2e44';
-    selectList.style.minHeight = '44px';
-    selectList.style.width = 'min-content';
+    selectList.style.color =  '#fff';
     selectList.id = 'semester';
+    tableCell.appendChild(selectList);
 
     // Add Semester as first Element
     const top = document.createElement('option');
@@ -87,10 +92,7 @@ function changeSemesterHeader(tableHeader) {
         opt.value = val;
         selectList.appendChild(opt);
     }
-    for (let i = 0; i < nodes.length; i++) {
-        selectList.setAttribute(nodes[i], values[i]);
-    }
-    tableHeader.parentNode.replaceChild(selectList,tableHeader);
+    tableHeader.parentNode.replaceChild(tableCell, tableHeader);
 }
 
 // Show only modules which contains letters of the searchstring
@@ -153,18 +155,22 @@ function changeExamName(tableHeader) {
     }
 
     // Create input field
+    const tableCell = document.createElement('th');
+    for (let i = 0; i < nodes.length; i++) {
+        tableCell.setAttribute(nodes[i], values[i]);
+    }
+
     const inputField = document.createElement('input');
     inputField.addEventListener('input', changeExam);
     inputField.style.textDecoration = 'none';
     inputField.style.backgroundColor = '#1c2e44';
-    inputField.style.minHeight = '44px';
-    inputField.style.width = '400px';
     inputField.id = 'searchBar';
     inputField.placeholder = 'Search...';
     inputField.type = 'text';
     inputField.style.color = '#fff';
 
-    tableHeader.parentNode.replaceChild(inputField, tableHeader);
+    tableCell.appendChild(inputField);
+    tableHeader.parentNode.replaceChild(tableCell, tableHeader);
 }
 
 // Search for headers
