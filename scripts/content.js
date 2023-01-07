@@ -43,7 +43,8 @@ function addDownloadButton() {
     const downloadLinkExcel = document.createElement('a');
     downloadLinkExcel.id = 'downloadButtonExcel';
     downloadLinkExcel.className = 'auflistung';
-    downloadLinkExcel.textContent = 'Noten als Excel-Datei herunterladen';
+    downloadLinkExcel.textContent = 'Noten als Excel-Datei herunterladen / Download grades as Excel file';
+    downloadLinkExcel.style.fontWeight = 'bold';
     downloadLinkExcel.addEventListener('click', startDownload);
 
     menueListStyleDownloadButton.appendChild(downloadLinkExcel);
@@ -51,7 +52,7 @@ function addDownloadButton() {
 }
 
 function startDownload() {
-    const filename = 'moduluebersicht.csv';
+    const filename = 'grades.csv';
     let text = 'Module;Note/Grades;ECTS;\n';
 
     for (let i = 0; i < qis_konto.length; i++) {
@@ -130,7 +131,7 @@ function changeSemesterHeader(tableHeader) {
 
     // Add Semester as first Element
     const top = document.createElement('option');
-    top.text = 'Semester';
+    top.text = 'Semester/Term';
     top.value = 'all';
     selectList.appendChild(top);
 
@@ -286,7 +287,7 @@ function calculateAverageGrade() {
 // Prints the average, best and worst grade
 function printAverageGrade() {
     calculateAverageGrade();
-    const tableValues = ['Aktueller Notendurchschnitt: ' + roundToTwo(avgGrade), 'Bester erreichbarer Notendurchschnitt: ' + bestGrade, 'Schlechtester erreichbarer Notendurchschnitt: ' + worstGrade];
+    const tableValues = ['Aktueller Notendurchschnitt / Current grade average: ' + roundToTwo(avgGrade), 'Bester erreichbarer Notendurchschnitt / Best achievable grade average: ' + bestGrade, 'Schlechtester erreichbarer Notendurchschnitt / Worst achievable grade average: ' + worstGrade];
     let latestRow = alignLefts[alignLefts.length-1].parentNode;
 
     for (let i = 0; i < 3; i++) {
@@ -295,6 +296,7 @@ function printAverageGrade() {
         td.className = 'qis_konto';
         td.setAttribute('valign', 'top');
         td.textContent = tableValues[i];
+        td.style.fontWeight = 'bold';
         td.setAttribute('colspan', '10');
         td.setAttribute('align', 'left');
         tr.appendChild(td);
