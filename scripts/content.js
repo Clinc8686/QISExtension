@@ -242,7 +242,7 @@ function changeSemester() {
     const semester = document.getElementById('semester');
     const selectedSemester = semester.options[semester.selectedIndex].text;
     let displayValue = '';
-    if (selectedSemester !== 'Semester') {
+    if (selectedSemester !== 'Semester/Term') {
         displayValue = 'none';
     }
 
