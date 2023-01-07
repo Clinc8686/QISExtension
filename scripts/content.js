@@ -52,11 +52,11 @@ function addDownloadButton() {
 
 function startDownload() {
     const filename = 'moduluebersicht.csv';
-    let text = 'Modul;Note;ECTS;\n';
+    let text = 'Module;Note/Grades;ECTS;\n';
 
     for (let i = 0; i < qis_konto.length; i++) {
         if (qis_konto[i].textContent.trim() === 'BE') {
-            const modulname = qis_konto[i-2].textContent.replace(/Modul:/g, '').trim();
+            const modulname = qis_konto[i-2].textContent.replace(/Modul:/g, '').replace(/Module:/g, '').trim();
             const grade = qis_konto[i-1].textContent.trim();
             const ects = qis_konto[i+1].textContent.trim();
             text += modulname + ';' + grade + ';' + ects + ';\n';
@@ -75,7 +75,7 @@ function startDownload() {
 
 function start() {
     // Checks if checkbox from menu is enabled and if it is the right page
-    if (window.isenabled && abstand_pruefinfo && h1.textContent.trim() === 'Notenspiegel') {
+    if (window.isenabled && abstand_pruefinfo && (h1.textContent.trim() === 'Notenspiegel' || h1.textContent.trim() === 'Exams Extract')) {
         getAllSemesters();
         changeHeader();
         printAverageGrade();
@@ -87,9 +87,9 @@ function start() {
 function getAllSemesters() {
     if (alignLefts.length > 0) {
         for (const alignLeft of alignLefts) {
-            if (alignLeft.textContent.includes('SoSe')) {
+            if (alignLeft.textContent.includes('SoSe') || alignLeft.textContent.includes('Summer term')) {
                 semester.add(alignLeft.textContent.trim());
-            } else if (alignLeft.textContent.includes('WiSe')) {
+            } else if (alignLeft.textContent.includes('WiSe') || alignLeft.textContent.includes('Winter term')) {
                 semester.add(alignLeft.textContent.trim());
             }
         }
@@ -228,9 +228,9 @@ function changeHeader() {
     // Get all attributes from old header
     const tableHeaders = document.getElementsByClassName('tabelleheader');
     for (let i = tableHeaders.length-1; i >= 0; i--) {
-        if (tableHeaders[i].textContent.includes('Semester')) {
+        if (tableHeaders[i].textContent.includes('Semester') || tableHeaders[i].textContent.includes('Term')) {
             changeSemesterHeader(tableHeaders[i]);
-        } else if (tableHeaders[i].textContent.includes('Prüfungstext')) {
+        } else if (tableHeaders[i].textContent.includes('Prüfungstext') || tableHeaders[i].textContent.includes('Name of Exam')) {
             changeExamName(tableHeaders[i]);
         }
     }
