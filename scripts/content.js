@@ -11,7 +11,7 @@ let bestGrade = 0;
 let isenabled;
 
 // Search for isenabled object in local storage of the browser and starts extension
-chrome.storage.local.get(["isenabled"]).then((result) => {
+chrome.storage.local.get(['isenabled']).then((result) => {
     if (result.isenabled === undefined) {
         window.isenabled = true;
         chrome.storage.local.set({ isenabled: true }, () => {
@@ -24,12 +24,62 @@ chrome.storage.local.get(["isenabled"]).then((result) => {
     start();
 });
 
+function addDownloadButton() {
+    const menu = document.getElementsByClassName('menue')[0];
+
+    //Get attributes from element above
+    let nodes=[], values=[];
+    for (const att of menu.firstElementChild.attributes) {
+        nodes.push(att.nodeName);
+        values.push(att.nodeValue);
+    }
+
+    //Set attributes on new element
+    const menueListStyleDownloadButton = document.createElement('li');
+    for (let i = 0; i < nodes.length; i++) {
+        menueListStyleDownloadButton.setAttribute(nodes[i], values[i]);
+    }
+
+    const downloadLinkExcel = document.createElement('a');
+    downloadLinkExcel.id = 'downloadButtonExcel';
+    downloadLinkExcel.className = 'auflistung';
+    downloadLinkExcel.textContent = 'Noten als Excel-Datei herunterladen';
+    downloadLinkExcel.addEventListener('click', startDownload);
+
+    menueListStyleDownloadButton.appendChild(downloadLinkExcel);
+    menu.appendChild(menueListStyleDownloadButton);
+}
+
+function startDownload() {
+    const filename = 'moduluebersicht.csv';
+    let text = 'Modul;Note;ECTS;\n';
+
+    for (let i = 0; i < qis_konto.length; i++) {
+        if (qis_konto[i].textContent.trim() === 'BE') {
+            const modulname = qis_konto[i-2].textContent.replace(/Modul:/g, '').trim();
+            const grade = qis_konto[i-1].textContent.trim();
+            const ects = qis_konto[i+1].textContent.trim();
+            text += modulname + ';' + grade + ';' + ects + ';\n';
+        }
+    }
+
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
 function start() {
     // Checks if checkbox from menu is enabled and if it is the right page
     if (window.isenabled && abstand_pruefinfo && h1.textContent.trim() === 'Notenspiegel') {
         getAllSemesters();
         changeHeader();
         printAverageGrade();
+        addDownloadButton();
     }
 }
 
@@ -110,7 +160,7 @@ function changeExam() {
     if (alignLefts.length > 0) {
         for (let i = alignLefts.length-1; i >= 0; i--) {
             const alignLeft = alignLefts[i];
-            if (alignLeft.textContent.trim().includes(searchString)) {
+            if (alignLeft.textContent.trim().toLowerCase().includes(searchString.toLowerCase())) {
                 alignLeft.parentElement.style.display = '';
                 i = i - 2;
             } else {
@@ -214,34 +264,12 @@ function changeSemester() {
     }
 }
 
-/*
-Funktionsweise kopiert, falls man nur die Noten bzw blauen hervorgehobenen Einzeiler sehen möchte
-function changeSemester() {
-    const semester = document.getElementById('semester');
-    const selectedSemester = semester.options[semester.selectedIndex].text;
-
-    const alignLefts = document.getElementsByClassName('ns_tabelle1_alignleft');
-    if (alignLefts.length > 0) {
-        //for (const alignLeft of alignLefts) {
-        for (let i = alignLefts.length-1; i >= 0; i--) {
-            const alignLeft = alignLefts[i];
-            if (alignLeft.textContent.includes(selectedSemester)) {
-
-            } else {
-                alignLeft.parentElement.remove();
-                i = i - 2;
-            }
-        }
-    }
-}
- */
-
 // Search all grades an ects and calculate average, best, worst
 function calculateAverageGrade() {
     for (let i = 0; i < qis_konto.length; i++) {
         if (qis_konto[i].textContent.trim() === 'BE') {
             const grade = qis_konto[i-1].textContent.replace(/,/g, '.');
-            const ects = parseFloat(qis_konto[i+1].textContent.replace(/,/g, '.'));
+            const ects = parseFloat(qis_konto[i+1].textContent);
             sumECTS += parseFloat(ects);
             sumGrades += (grade * ects);
         }
@@ -282,5 +310,5 @@ function insertAfter(referenceNode, newNode) {
 
 // Round to two decimal places
 function roundToTwo(num) {
-    return +(Math.round(num + "e+2")  + "e-2");
+    return +(Math.round(num + 'e+2')  + 'e-2');
 }
