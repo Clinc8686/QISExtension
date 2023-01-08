@@ -24,6 +24,16 @@ chrome.storage.local.get(['isenabled']).then((result) => {
     start();
 });
 
+function start() {
+    // Checks if checkbox from menu is enabled and if it is the right page
+    if (window.isenabled && abstand_pruefinfo && (h1.textContent.trim() === 'Notenspiegel' || h1.textContent.trim() === 'Exams Extract')) {
+        getAllSemesters();
+        changeHeader();
+        printAverageGrade();
+        addDownloadButton();
+    }
+}
+
 function addDownloadButton() {
     const menu = document.getElementsByClassName('menue')[0];
 
@@ -56,7 +66,7 @@ function startDownload() {
     let text = 'Module;Note/Grades;ECTS;\n';
 
     for (let i = 0; i < qis_konto.length; i++) {
-        if (qis_konto[i].textContent.trim() === 'BE') {
+        if (qis_konto[i].textContent.trim() === 'BE' && qis_konto[i-1].textContent.trim()) {
             const modulname = qis_konto[i-2].textContent.replace(/Modul:/g, '').replace(/Module:/g, '').trim();
             const grade = qis_konto[i-1].textContent.trim();
             const ects = qis_konto[i+1].textContent.trim();
@@ -72,16 +82,6 @@ function startDownload() {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-}
-
-function start() {
-    // Checks if checkbox from menu is enabled and if it is the right page
-    if (window.isenabled && abstand_pruefinfo && (h1.textContent.trim() === 'Notenspiegel' || h1.textContent.trim() === 'Exams Extract')) {
-        getAllSemesters();
-        changeHeader();
-        printAverageGrade();
-        addDownloadButton();
-    }
 }
 
 // Select all semesters once
@@ -267,8 +267,8 @@ function changeSemester() {
 
 // Search all grades an ects and calculate average, best, worst
 function calculateAverageGrade() {
-    for (let i = 0; i < qis_konto.length; i++) {
-        if (qis_konto[i].textContent.trim() === 'BE') {
+    for (let i = 1; i < qis_konto.length; i++) {
+        if (qis_konto[i].textContent.trim() === 'BE' && qis_konto[i-1].textContent.trim()) {
             const grade = qis_konto[i-1].textContent.replace(/,/g, '.');
             const ects = parseFloat(qis_konto[i+1].textContent);
             sumECTS += parseFloat(ects);
