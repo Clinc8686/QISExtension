@@ -10,20 +10,7 @@ let worstGrade = 0;
 let bestGrade = 0;
 let isenabled;
 
-// Search for isenabled object in local storage of the browser and starts extension
-chrome.storage.local.get(['isenabled']).then((result) => {
-    if (result.isenabled === undefined) {
-        window.isenabled = true;
-        chrome.storage.local.set({ isenabled: true }, () => {
-            if (chrome.runtime.lastError)
-                console.log('Error QIS Helper - isenable storage content');
-        });
-    } else {
-        window.isenabled = result.isenabled;
-    }
-    start();
-});
-
+getStorageData();
 function start() {
     // Checks if checkbox from menu is enabled and if it is the right page
     if (window.isenabled && abstand_pruefinfo && (h1.textContent.trim() === 'Notenspiegel' || h1.textContent.trim() === 'Exams Extract')) {
@@ -31,6 +18,48 @@ function start() {
         changeHeader();
         printAverageGrade();
         addDownloadButton();
+    }
+}
+
+// Search for isenabled object in local storage of the browser and starts extension
+function getStorageData() {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+        // If Chrome-API available
+        chrome.storage.local.get(['isenabled']).then((result) => {
+            if (result.isenabled === undefined) {
+                window.isenabled = true;
+                chrome.storage.local.set({ isenabled: true }, () => {
+                    if (chrome.runtime.lastError)
+                        console.log('Error QIS Helper - isenable storage content');
+                });
+            } else {
+                window.isenabled = result.isenabled;
+            }
+            start();
+        });
+    } else if (typeof browser !== 'undefined' && browser.storage) {
+        // If Firefox-API available
+        browser.storage.local.get('isenabled').then((result) => {
+            if (result.isenabled === undefined) {
+                window.isenabled = true;
+                browser.storage.local.set({ isenabled: true }).then(() => {
+                    if (browser.runtime.lastError)
+                        console.log('Error QIS Helper - isenable storage content');
+                });
+            } else {
+                window.isenabled = result.isenabled;
+            }
+            start();
+        });
+    } else {
+        // If no API is available
+        if (!localStorage.getItem('isenabled')) {
+            window.isenabled = true;
+            localStorage.setItem('isenabled', true);
+        } else {
+            window.isenabled = JSON.parse(localStorage.getItem('isenabled'));
+        }
+        start();
     }
 }
 
@@ -64,6 +93,7 @@ function addDownloadButton() {
 function startDownload() {
     const filename = 'grades.csv';
     let text = 'Module;Note/Grades;ECTS;\n';
+    let row = 1
 
     for (let i = 0; i < qis_konto.length; i++) {
         if (qis_konto[i].textContent.trim() === 'BE' && qis_konto[i-1].textContent.trim()) {
@@ -71,8 +101,11 @@ function startDownload() {
             const grade = qis_konto[i-1].textContent.trim();
             const ects = qis_konto[i+1].textContent.trim();
             text += modulname + ';' + grade + ';' + ects + ';\n';
+            row++;
         }
     }
+
+    text += '\n\n' + 'Aktueller Notendurchschnitt:;' + ';=SUMMENPRODUKT(B2:B'+row+'\;C2:C'+row+')/SUMME(C2:C'+row+')';
 
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -267,6 +300,17 @@ function changeSemester() {
 
 // Search all grades an ects and calculate average, best, worst
 function calculateAverageGrade() {
+    let requiredECTS;
+    const degrees = document.getElementsByClassName('qis_kontoOnTop');
+    for (const degree of degrees) {
+        const text = degree.textContent.trim();
+        if (text === 'Master') {
+            requiredECTS = 120.0;
+        } else if (text === 'Bachelor') {
+            requiredECTS = 180.0;
+        }
+    }
+
     for (let i = 1; i < qis_konto.length; i++) {
         if (qis_konto[i].textContent.trim() === 'BE' && qis_konto[i-1].textContent.trim()) {
             const grade = qis_konto[i-1].textContent.replace(/,/g, '.');
@@ -276,7 +320,6 @@ function calculateAverageGrade() {
         }
     }
     avgGrade = sumGrades/sumECTS;
-    const requiredECTS = 180.0;
     const missingECTS = requiredECTS - sumECTS;
     worstGrade = ((missingECTS * 4.0) + sumGrades) / requiredECTS;
     worstGrade = roundToTwo(worstGrade);
