@@ -3,17 +3,26 @@ const h1 = document.getElementsByTagName('h1')[0];
 const alignLefts = document.getElementsByClassName('ns_tabelle1_alignleft');
 const qis_konto = document.getElementsByClassName('qis_konto');
 let semester = new Set();
-let avgGrade = 0;
-let sumECTS = 0;
+let calculatedSumECTS = 0;
 let sumGrades = 0;
-let worstGrade = 0;
-let bestGrade = 0;
 let isenabled;
-
+let deviatingECTS;
+let userLanguage = 0;
+let gradeValues;
 getStorageData();
+
+function defineLanguage() {
+    if (document.documentElement.lang === "de") {
+        userLanguage = 0;
+    } else {
+        userLanguage = 1;
+    }
+}
+
 function start() {
     // Checks if checkbox from menu is enabled and if it is the right page
     if (window.isenabled && abstand_pruefinfo && (h1.textContent.trim() === 'Notenspiegel' || h1.textContent.trim() === 'Exams Extract')) {
+        defineLanguage();
         getAllSemesters();
         changeHeader();
         printAverageGrade();
@@ -65,6 +74,7 @@ function getStorageData() {
 
 function addDownloadButton() {
     const menu = document.getElementsByClassName('menue')[0];
+    const excelText = ['Noten als Excel-Datei herunterladen', 'Download grades as Excel file'];
 
     //Get attributes from element above
     let nodes=[], values=[];
@@ -82,7 +92,7 @@ function addDownloadButton() {
     const downloadLinkExcel = document.createElement('a');
     downloadLinkExcel.id = 'downloadButtonExcel';
     downloadLinkExcel.className = 'auflistung';
-    downloadLinkExcel.textContent = 'Noten als Excel-Datei herunterladen / Download grades as Excel file';
+    downloadLinkExcel.textContent = excelText[userLanguage];
     downloadLinkExcel.style.fontWeight = 'bold';
     downloadLinkExcel.addEventListener('click', startDownload);
 
@@ -164,7 +174,8 @@ function changeSemesterHeader(tableHeader) {
 
     // Add Semester as first Element
     const top = document.createElement('option');
-    top.text = 'Semester/Term';
+    const navbarText = ['Semester','Term'];
+    top.text = navbarText[userLanguage];
     top.value = 'all';
     selectList.appendChild(top);
 
@@ -245,11 +256,12 @@ function changeExamName(tableHeader) {
     }
 
     const inputField = document.createElement('input');
+    const placeholder = ['Suche...', 'Search...'];
     inputField.addEventListener('input', changeExam);
     inputField.style.textDecoration = 'none';
     inputField.style.backgroundColor = '#1c2e44';
     inputField.id = 'searchBar';
-    inputField.placeholder = 'Search...';
+    inputField.placeholder = placeholder[userLanguage];
     inputField.type = 'text';
     inputField.style.color = '#fff';
 
@@ -298,9 +310,26 @@ function changeSemester() {
     }
 }
 
+function checkElectiveModules(electiveModules, targetValue, otherModules) {
+    let sum = otherModules.reduce((acc, val) => acc + val[2], 0);
+    const diff = targetValue - sum;
+
+    electiveModules.sort(function (a,b) {
+        return a[1] - b[1];
+    }).reverse();
+
+    while (sum > diff) {
+        electiveModules.shift();
+        sum = electiveModules.reduce((acc, curr) => acc + curr[2], 0);
+    }
+
+    return electiveModules;
+}
+
 // Search all grades an ects and calculate average, best, worst
 function calculateAverageGrade() {
     let requiredECTS;
+    let QISSumECTS;
     const degrees = document.getElementsByClassName('qis_kontoOnTop');
     for (const degree of degrees) {
         const text = degree.textContent.trim();
@@ -308,44 +337,97 @@ function calculateAverageGrade() {
             requiredECTS = 120.0;
         } else if (text === 'Bachelor') {
             requiredECTS = 180.0;
+        } else if (parseInt(text)) {
+            QISSumECTS = parseFloat(text.replace(/,/g, '.').trim());
         }
     }
 
+    let isEM = false;
+    let electiveModules = [];
+    let otherModules = [];
     for (let i = 1; i < qis_konto.length; i++) {
+        if (qis_konto[i].textContent.trim() === 'Wahlpflichtmodule') {
+            isEM = true;
+        } else if (qis_konto[i].textContent.trim() === 'Pflichtmodule' || qis_konto[i].textContent.trim() === 'Kernmodule') {
+            isEM = false;
+        }
         if (qis_konto[i].textContent.trim() === 'BE' && qis_konto[i-1].textContent.trim()) {
-            const grade = qis_konto[i-1].textContent.replace(/,/g, '.');
+            calculatedSumECTS += parseFloat(qis_konto[i+1].textContent.replace(/,/g, '.').trim());
+            const modulname = qis_konto[i-2].textContent.replace(/Modul:/g, '').replace(/Module:/g, '').trim();
+            const grade = parseFloat(qis_konto[i-1].textContent.replace(/,/g, '.').trim());
             const ects = parseFloat(qis_konto[i+1].textContent);
-            sumECTS += parseFloat(ects);
             sumGrades += (grade * ects);
+
+            if (isEM) {
+                electiveModules.push([modulname, grade, ects]);
+            } else {
+                otherModules.push([modulname, grade, ects])
+            }
         }
     }
-    avgGrade = sumGrades/sumECTS;
-    const missingECTS = requiredECTS - sumECTS;
-    worstGrade = ((missingECTS * 4.0) + sumGrades) / requiredECTS;
+
+    if (calculatedSumECTS > QISSumECTS) {
+        deviatingECTS = true;
+        electiveModules = checkElectiveModules(electiveModules, QISSumECTS, otherModules);
+        const allModules = electiveModules.concat(otherModules);
+
+        sumGrades = 0;
+        calculatedSumECTS = 0;
+        for (const module of allModules) {
+            sumGrades += (module[1] * module[2]);
+            calculatedSumECTS += module[2];
+        }
+    } else {
+        deviatingECTS = false;
+    }
+
+    let avgGrade = roundToTwo(sumGrades/calculatedSumECTS);
+    const missingECTS = requiredECTS - calculatedSumECTS;
+    let worstGrade = ((missingECTS * 4.0) + sumGrades) / requiredECTS;
     worstGrade = roundToTwo(worstGrade);
-    bestGrade = ((missingECTS * 1.0) + sumGrades) / requiredECTS;
+    let bestGrade = ((missingECTS * 1.0) + sumGrades) / requiredECTS;
     bestGrade = roundToTwo(bestGrade);
+    gradeValues = [[avgGrade, bestGrade, worstGrade], ['', '', '']];
 }
 
 // Prints the average, best and worst grade
 function printAverageGrade() {
     calculateAverageGrade();
-    const tableValues = ['Aktueller Notendurchschnitt / Current grade average: ' + roundToTwo(avgGrade), 'Bester erreichbarer Notendurchschnitt / Best achievable grade average: ' + bestGrade, 'Schlechtester erreichbarer Notendurchschnitt / Worst achievable grade average: ' + worstGrade];
+    const tableValues = [
+        ['Aktueller Notendurchschnitt: ' + gradeValues[0][0], 'Current grade point average: ' + gradeValues[0][0]],
+        ['Bester erreichbarer Notendurchschnitt: ' + gradeValues[0][1], 'Best possible grade point average: ' + gradeValues[0][1]],
+        ['Schlechtester erreichbarer Notendurchschnitt: ' + gradeValues[0][2], 'Worst possible grade point average: ' + gradeValues[0][2]],
+        ['Aktueller Notendurchschnitt liegt möglicherweise zwischen ' + gradeValues[0][0] + ' und ' + gradeValues[0][1], 'The current grade point average may be between ' + gradeValues[0][0] + ' and ' + gradeValues[0][1]],
+        ['Bester erreichbarer Notendurchschnitt liegt möglicherweise zwischen ' + gradeValues[0][1] + ' und ' + gradeValues[1][1], 'The best attainable grade point average may be between ' + gradeValues[0][1] + ' and ' + gradeValues[1][1]],
+        ['Schlechtester erreichbarer Notendurchschnitt liegt möglicherweise zwischen ' + gradeValues[0][2] + ' und ' + gradeValues[1][2], 'The worst attainable grade point average may be between ' + gradeValues[0][2] + ' and ' + gradeValues[1][2]],
+        ['Unterschiedliche ECTS Berechnung: Der Notendurchschnitt konnte nicht genau berechnet werden und ist möglicherweise abweichend.', 'Different ECTS calculation: The grade point average could not be calculated precisely and may be different.']
+    ];
     let latestRow = alignLefts[alignLefts.length-1].parentNode;
+    let startTableValue = 0;
+    let endTableValue = 3;
 
-    for (let i = 0; i < 3; i++) {
-        const tr = document.createElement('tr');
-        const td = document.createElement('td');
-        td.className = 'qis_konto';
-        td.setAttribute('valign', 'top');
-        td.textContent = tableValues[i];
-        td.style.fontWeight = 'bold';
-        td.setAttribute('colspan', '10');
-        td.setAttribute('align', 'left');
-        tr.appendChild(td);
-        insertAfter(latestRow, tr);
-        latestRow = tr;
+    if (deviatingECTS) {
+        latestRow = createFooter(latestRow, tableValues[tableValues.length-1][userLanguage]);
     }
+
+    for (let i = startTableValue; i < endTableValue; i++) {
+        latestRow = createFooter(latestRow, tableValues[i][userLanguage]);
+    }
+}
+
+// Function to create footer in table
+function createFooter(latestRow, text) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.className = 'qis_konto';
+    td.setAttribute('valign', 'top');
+    td.textContent = text;
+    td.style.fontWeight = 'bold';
+    td.setAttribute('colspan', '10');
+    td.setAttribute('align', 'left');
+    tr.appendChild(td);
+    insertAfter(latestRow, tr);
+    return tr;
 }
 
 // Function to insert a Node after a other Node
