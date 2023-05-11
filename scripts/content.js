@@ -368,7 +368,7 @@ function calculateAverageGrade() {
 
     if (calculatedSumECTS > QISSumECTS) {
         deviatingECTS = true;
-        electiveModules = checkElectiveModules(electiveModules, QISSumECTS, otherModules);
+        /* electiveModules = checkElectiveModules(electiveModules, QISSumECTS, otherModules);
         const allModules = electiveModules.concat(otherModules);
 
         sumGrades = 0;
@@ -376,7 +376,7 @@ function calculateAverageGrade() {
         for (const module of allModules) {
             sumGrades += (module[1] * module[2]);
             calculatedSumECTS += module[2];
-        }
+        } */
     } else {
         deviatingECTS = false;
     }
