@@ -318,11 +318,12 @@ function checkElectiveModules(electiveModules, targetValue, otherModules) {
         return a[1] - b[1];
     }).reverse();
 
-    while (sum > diff) {
+    let x = 0;
+    while (sum > diff && x < 10) {
         electiveModules.shift();
         sum = electiveModules.reduce((acc, curr) => acc + curr[2], 0);
+        x++;
     }
-
     return electiveModules;
 }
 
@@ -348,10 +349,11 @@ function calculateAverageGrade() {
     for (let i = 1; i < qis_konto.length; i++) {
         if (qis_konto[i].textContent.trim() === 'Wahlpflichtmodule') {
             isEM = true;
-        } else if (qis_konto[i].textContent.trim() === 'Pflichtmodule' || qis_konto[i].textContent.trim() === 'Kernmodule') {
+        } else if (qis_konto[i].textContent.trim() === 'Pflichtmodule' || qis_konto[i].textContent.trim() === 'Kernmodule' || qis_konto[i].textContent.trim() ===  'Praxisprojekte') {
             isEM = false;
         }
-        if (qis_konto[i].textContent.trim() === 'BE' && qis_konto[i-1].textContent.trim()) {
+
+        if (qis_konto[i].textContent.trim() === 'BE' && qis_konto[i-1].textContent.trim() && (qis_konto[i-2].textContent.trim() !== 'Pflichtmodule' && qis_konto[i-2].textContent.trim() !== 'Kernmodule' && qis_konto[i-2].textContent.trim() !== 'Praxisprojekt')) {
             calculatedSumECTS += parseFloat(qis_konto[i+1].textContent.replace(/,/g, '.').trim());
             const modulname = qis_konto[i-2].textContent.replace(/Modul:/g, '').replace(/Module:/g, '').trim();
             const grade = parseFloat(qis_konto[i-1].textContent.replace(/,/g, '.').trim());
@@ -368,15 +370,14 @@ function calculateAverageGrade() {
 
     if (calculatedSumECTS > QISSumECTS) {
         deviatingECTS = true;
-        /* electiveModules = checkElectiveModules(electiveModules, QISSumECTS, otherModules);
+        electiveModules = checkElectiveModules(electiveModules, QISSumECTS, otherModules);
         const allModules = electiveModules.concat(otherModules);
-
         sumGrades = 0;
         calculatedSumECTS = 0;
         for (const module of allModules) {
             sumGrades += (module[1] * module[2]);
             calculatedSumECTS += module[2];
-        } */
+        }
     } else {
         deviatingECTS = false;
     }
