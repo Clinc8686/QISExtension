@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "HS Trier QIS Helper",
   "description": "Erweitert den QIS Notenspiegel der Hochschule Trier um einige hilfreiche Funktionen.",
-  "version": "1.13",
+  "version": "1.14",
   "action": {
     "default_popup": "extension_menu/index.html",
     "default_icon": "icons/icon-128.png"
@@ -26,8 +26,7 @@
     {
       "js": ["scripts/content.js"],
       "matches": [
-        "https://qis.hochschule-trier.de/qisserver/*",
-        "file:///C:/Users/Mario/OneDrive/Desktop/Hochschule_Trier.html"
+        "https://qis.hochschule-trier.de/qisserver/*"
       ]
     }
   ]
