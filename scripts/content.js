@@ -286,10 +286,14 @@ function changeHeader() {
 function changeSemester() {
     const semester = document.getElementById('semester');
     const selectedSemester = semester.options[semester.selectedIndex].text;
-    let displayValue = '';
-    if (selectedSemester !== 'Semester/Term') {
+
+    let displayValue = 'none';
+    if (selectedSemester === 'Semester' || selectedSemester === 'Term') {
+        displayValue = '';
+    } else {
         displayValue = 'none';
     }
+    console.log(selectedSemester)
 
     if (alignLefts.length > 0) {
         for (let i = alignLefts.length-1; i >= 0; i--) {
