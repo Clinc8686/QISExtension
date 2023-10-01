@@ -2,7 +2,7 @@ const checkbox = document.getElementById('darkmodeEnabler');
 let darkModeEnabled;
 
 function changeStatus() {
-    const darkmodeText = document.getElementById('checkboxText');
+    const darkmodeText = document.getElementById('darkmodeModifierText');
     if (checkbox.checked) {
         if (typeof chrome !== 'undefined' && chrome.storage) {
             // If Chrome-API available
@@ -89,15 +89,15 @@ function getStorageValue() {
 }
 
 function setStatus() {
-    const QISModifierText = document.getElementById('QISModifierText');
+    const darkmodeText = document.getElementById('darkmodeModifierText');
     if (window.darkModeEnabled) {
-        if (QISModifierText.innerText.includes('disabled')) {
-            QISModifierText.innerText = QISModifierText.innerText.replace('disabled', 'enabled');
+        if (darkmodeText.innerText.includes('disabled')) {
+            darkmodeText.innerText = darkmodeText.innerText.replace('disabled', 'enabled');
         }
         checkbox.checked = true;
     } else {
-        if (QISModifierText.innerText.includes('enabled')) {
-            QISModifierText.innerText = QISModifierText.innerText.replace('enabled', 'disabled');
+        if (darkmodeText.innerText.includes('enabled')) {
+            darkmodeText.innerText = darkmodeText.innerText.replace('enabled', 'disabled');
         }
         checkbox.checked = false;
     }
