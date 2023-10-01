@@ -1,8 +1,8 @@
-const checkbox = document.getElementById('checkboxEnabler');
+const checkbox = document.getElementById('QISModifierEnabler');
 let isenabled;
 
 function changeStatus() {
-    const checkboxText = document.getElementById('checkboxText');
+    const QISModifierText = document.getElementById('QISModifierText');
     if (checkbox.checked) {
         if (typeof chrome !== 'undefined' && chrome.storage) {
             // If Chrome-API available
@@ -21,8 +21,8 @@ function changeStatus() {
             localStorage.setItem('isenabled', true);
         }
 
-        if (checkboxText.innerText.includes('disabled')) {
-            checkboxText.innerText = checkboxText.innerText.replace('disabled', 'enabled');
+        if (QISModifierText.innerText.includes('disabled')) {
+            QISModifierText.innerText = QISModifierText.innerText.replace('disabled', 'enabled');
         }
         checkbox.checked = true;
     } else {
@@ -43,8 +43,8 @@ function changeStatus() {
             localStorage.setItem('isenabled', false);
         }
 
-        if (checkboxText.innerText.includes('enabled')) {
-            checkboxText.innerText = checkboxText.innerText.replace('enabled', 'disabled');
+        if (QISModifierText.innerText.includes('enabled')) {
+            QISModifierText.innerText = QISModifierText.innerText.replace('enabled', 'disabled');
         }
         checkbox.checked = false;
     }
@@ -52,7 +52,7 @@ function changeStatus() {
 
 window.addEventListener('load', (event) => {
    getStorageValue();
-   const checkbox = document.getElementById('checkboxEnabler');
+   const checkbox = document.getElementById('QISModifierEnabler');
    checkbox.addEventListener('change', changeStatus);
 });
 
@@ -89,15 +89,15 @@ function getStorageValue() {
 }
 
 function setStatus() {
-    const checkboxText = document.getElementById('checkboxText');
+    const QISModifierText = document.getElementById('QISModifierText');
     if (window.isenabled) {
-        if (checkboxText.innerText.includes('disabled')) {
-            checkboxText.innerText = checkboxText.innerText.replace('disabled', 'enabled');
+        if (QISModifierText.innerText.includes('disabled')) {
+            QISModifierText.innerText = QISModifierText.innerText.replace('disabled', 'enabled');
         }
         checkbox.checked = true;
     } else {
-        if (checkboxText.innerText.includes('enabled')) {
-            checkboxText.innerText = checkboxText.innerText.replace('enabled', 'disabled');
+        if (QISModifierText.innerText.includes('enabled')) {
+            QISModifierText.innerText = QISModifierText.innerText.replace('enabled', 'disabled');
         }
         checkbox.checked = false;
     }
