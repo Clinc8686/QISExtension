@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "HS Trier QIS Helper",
   "description": "Enhance the QIS grade report of Trier University with some helpful features.",
-  "version": "1.16",
+  "version": "1.17",
   "action": {
     "default_popup": "extension_menu/index.html",
     "default_icon": {
