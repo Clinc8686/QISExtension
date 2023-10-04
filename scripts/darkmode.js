@@ -124,9 +124,23 @@ function startDarkmode() {
     }
 }
 
+let hasRun = false;
 window.onload = function () {
-    getStorageData();
+    if (!hasRun) {
+        getStorageData();
+        hasRun = true;
+    }
+
 }
+window.addEventListener('load', function () {
+    if (!hasRun) {
+        getStorageData();
+        hasRun = true;
+    }
+});
+
+if (!hasRun)
+    getStorageData();
 
 const observer = new MutationObserver((mutationsList, observer) => {
     startDarkmode();
