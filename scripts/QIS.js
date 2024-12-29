@@ -27,6 +27,7 @@ function start() {
         changeHeader();
         printAverageGrade();
         addDownloadButton();
+        addUnsupportedVersionHint();
     }
 }
 
@@ -98,6 +99,55 @@ function addDownloadButton() {
 
     menueListStyleDownloadButton.appendChild(downloadLinkExcel);
     menu.appendChild(menueListStyleDownloadButton);
+}
+
+function addUnsupportedVersionHint() {
+    const menu = document.getElementsByClassName('menue')[0];
+
+    const supportHTML = [`
+        <p>Vielen Dank an die weit über 200 Nutzer/innen und Supporter/innen des Web-Plugins "QIS-Helper".</p>
+        <p>Der Support wird zum 01.04.2025 eingestellt.</p>
+        <p>Wegen Beendigung des Studiums hat dann der Entwickler keinen weiteren Zugriff mehr auf das QIS.</p>
+        <p>Das Plugin kann weiterhin installiert bleiben. Sollte es jedoch Probleme geben, kann es bedenkenlos entfernt werden.</p>
+        <p>Falls jemand Interesse daran hat, die Weiterentwicklung des Plugins eigenständig zu übernehmen, kann das Tool unter folgendem Link heruntergeladen werden:</p>
+        <a href="https://github.com/Clinc8686/QISExtension" class="auflistung"  target="_self" style="text-decoration: underline;">GitHub Repository QISExtension</a>
+        <p>Beste Grüße und weiterhin viel Erfolg im Studium!<br>Mario</p>
+    `,
+    `
+        <p>Many thanks to the more than 200 users and supporters of the web plugin "QIS-Helper".</p>
+        <p>Support will be discontinued on April 1, 2025.</p>
+        <p>Due to the end of his studies, the developer will no longer have access to the QIS.</p>
+        <p>The plugin can remain installed. However, if any issues arise, it can be safely removed.</p>
+        <p>If anyone is interested in taking over the further development of the plugin independently, the tool can be downloaded from the following link:</p>
+        <a href="https://github.com/Clinc8686/QISExtension" class="auflistung"  target="_self" style="text-decoration: underline;">GitHub Repository QISExtension</a>
+        <p>Best regards and good luck with your studies!<br>Mario</p>`
+    ];
+
+    let nodes = [], values = [];
+    for (const att of menu.firstElementChild.attributes) {
+        nodes.push(att.nodeName);
+        values.push(att.nodeValue);
+    }
+
+    const noticeElement = document.createElement('li');
+    for (let i = 0; i < nodes.length; i++) {
+        noticeElement.setAttribute(nodes[i], values[i]);
+    }
+
+    const noticeDiv = document.createElement('div');
+    noticeDiv.id = 'supportNotice';
+    noticeDiv.className = 'support-hint';
+    noticeDiv.innerHTML = supportHTML[userLanguage];
+    noticeDiv.style.fontWeight = 'bold';
+    noticeDiv.style.backgroundColor = 'white';
+    noticeDiv.style.padding = '10px';
+    noticeDiv.style.border = '2px solid red';
+    noticeDiv.style.borderRadius = '5px';
+    noticeDiv.style.margin = '10px 0';
+    noticeDiv.style.cursor = 'default';
+
+    noticeElement.appendChild(noticeDiv);
+    menu.appendChild(noticeElement);
 }
 
 function startDownload() {

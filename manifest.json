@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "HS Trier QIS Helper",
   "description": "Enhance the QIS grade report of Trier University with some helpful features.",
-  "version": "1.17",
+  "version": "1.20",
   "action": {
     "default_popup": "extension_menu/index.html",
     "default_icon": {
@@ -19,7 +19,7 @@
       "update_url": "https://mariolampert.de/projekte/HSTrierQISHelper/Firefox/updates.json"
     }
   },
-  "permissions": [ "storage" ],
+  "permissions": ["storage"],
   "host_permissions": [ "*://qis.hochschule-trier.de/*" ],
   "content_scripts": [
     {
